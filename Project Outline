@@ -1,0 +1,15 @@
+#Open in qPCR
+#remove header
+#extract columns C, D, F, G from rows 29 to 110
+#make new csv file with cleaner data
+#seperate by genes and technical duplications(Tub 1, Tub2, etc)
+#average each of tub
+#dCT = Normalizing genes to Tublin
+#take each techinical replicate for each gene and average to tublin CT (IFN 1 Bio Rep 1 Tec Rep 1 - Avg Tub 1 for each sample) (should have dCT1 and dCT2)
+#Average control dCT for control sample(lenti)
+#ddCT = take normalized gene measurement and substract normalized control. Repeat for all biological and technical replicates
+#determine fold change relative to control 
+#calculate average fold change for each sample of each gene
+#calculate standard deviation
+#calculate pvalue
+#graph data in bar graph
