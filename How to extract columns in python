@@ -8,4 +8,9 @@ data = pandas.read_csv("../QPCR/p150KO_p150_dcat_2.csv", encoding = "latin1")
 #extract columns
 qpcr = data[["Sample","Task","Ct"]].copy()
 
+#check and make sure everything looks good
 print(qpcr)
+
+headers = ["Sample", "Task", "Ct"]
+#save as new csv file named qpcr
+qpcr.to_csv('qpcr', columns = headers)
