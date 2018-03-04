@@ -1,0 +1,11 @@
+#I caved and removed the weird header thing by hand
+import csv
+import pandas
+import numpy as np
+
+#Create data frame
+data = pandas.read_csv("../QPCR/p150KO_p150_dcat_2.csv", encoding = "latin1")
+#extract columns
+qpcr = data[["Sample","Task","Ct"]].copy()
+
+print(qpcr)
