@@ -10,7 +10,7 @@ def remove_excess_space_csv(filename: "../QPCR/p150KO_p150_dcat_2.csv",
 
     #Create data frame
     data = pandas.read_csv( filename, encoding = "latin1")
-    #extract excess columns
+    #extract only the pertinent columns
     qpcr = data[["Sample","Task","Ct"]].copy()
 
     #check and make sure everything looks good
