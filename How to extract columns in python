@@ -1,16 +1,20 @@
-#I caved and removed the weird header thing by hand
-import csv
-import pandas
-import numpy as np
+#Updated created function
+#You just have to tell it the inputfile name 
+#and the new name for the file
 
-#Create data frame
-data = pandas.read_csv("../QPCR/p150KO_p150_dcat_2.csv", encoding = "latin1")
-#extract columns
-qpcr = data[["Sample","Task","Ct"]].copy()
+def remove_excess_space_csv(filename: "../QPCR/p150KO_p150_dcat_2.csv",
+                           outputfile : 'qpcr'):
+    import csv
+    import pandas
 
-#check and make sure everything looks good
-print(qpcr)
+    #Create data frame
+    data = pandas.read_csv( filename, encoding = "latin1")
+    #extract excess columns
+    qpcr = data[["Sample","Task","Ct"]].copy()
 
-headers = ["Sample", "Task", "Ct"]
-#save as new csv file named qpcr
-qpcr.to_csv('qpcr', columns = headers)
+    #check and make sure everything looks good
+    print(qpcr)
+
+    headers = ["Sample", "Task", "Ct"]
+    #save as new csv file named qpcr
+    qpcr.to_csv( outputfile, columns = headers)
