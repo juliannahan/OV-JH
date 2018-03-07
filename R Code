@@ -1,7 +1,7 @@
 qpcr <- read.csv("p150KO.csv", stringsAsFactors = FALSE, header = TRUE)
 
 #remove column x
-qcr$X <- NULL
+qpcr$X <- NULL
 
 #reorganize columns
 qpcr2 <- qpcr %>% spread(Sample, Ct)
