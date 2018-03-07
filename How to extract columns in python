@@ -4,7 +4,7 @@
 #and the new name for the file
 
 def remove_excess_space_csv(filename: "../QPCR/p150KO_p150_dcat_2.csv",
-                           outputfile : 'qpcr'):
+                           outputfile : 'p150KO.csv'):
     import csv
     import pandas
 
