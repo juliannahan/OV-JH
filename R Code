@@ -5,3 +5,9 @@ qpcr$X <- NULL
 
 #reorganize columns
 qpcr2 <- qpcr %>% spread(Sample, Ct)
+
+#start with just tubulin
+#make data set with tubulin values only
+tub1 <- qpcr2 %>% select(Task, Tub_1)
+tub2 <- qpcr2 %>% select(Task, Tub_2)
+tubulin <- inner_join(tub1, tub2)
