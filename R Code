@@ -1,3 +1,4 @@
+library(tidyverse)
 qpcr <- read.csv("p150KO.csv", stringsAsFactors = FALSE, header = TRUE)
 
 #remove column x
@@ -11,3 +12,17 @@ qpcr2 <- qpcr %>% spread(Sample, Ct)
 tub1 <- qpcr2 %>% select(Task, Tub_1)
 tub2 <- qpcr2 %>% select(Task, Tub_2)
 tubulin <- inner_join(tub1, tub2)
+
+#calculate the average Tubulin for each row (includes all samples)
+qpcr2$tubulin_ref <- apply(qpcr2[,8:9], 1, mean)
+
+#show only tubulin ct values and tubulin avg
+tubulin$tub_avg <- apply(qpcr2[,8:9], 1, mean)
+
+#exctract IFNb Ct values, make table
+ifn1 <- qpcr2 %>% select(Task, IFNb_1)
+ifn2 <- qpcr2 %>% select(Task, IFNb_2)
+ifn <- inner_join(ifn1, ifn2)
+
+#join tubulin ct, tubulin avg, and IFNb ct values
+ifn_tub <- inner_join(tubulin, ifn)
