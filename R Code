@@ -26,3 +26,7 @@ ifn <- inner_join(ifn1, ifn2)
 
 #join tubulin ct, tubulin avg, and IFNb ct values
 ifn_tub <- inner_join(tubulin, ifn)
+
+#calculate dCT 
+ifn_tub$dCT_1 <- (ifn_tub$IFNb_1 - ifn_tub$tub_avg)
+ifn_tub$dCT_2 <- (ifn_tub$IFNb_2 - ifn_tub$tub_avg)
