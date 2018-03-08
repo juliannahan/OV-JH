@@ -45,7 +45,8 @@ ifn_tub$ddCt_2 <- (ifn_tub$dCt_2 - ifn_tub$len_avg)
 
 #Calc fold change: 2^(-ddCt_x)
 2^(-ifn_tub$ddCt_1)
-
+ifn_tub$fold_1 <- 2^(-ifn_tub$ddCt_1)
+ifn_tub$fold_2 <- 2^(-ifn_tub$ddCt_2)
 
 
 
