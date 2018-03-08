@@ -58,5 +58,5 @@ dataPoints_means <- apply(dataPoints, 2, mean)
 
 # Find standard deviation with `apply()`
 dataPoints_sdev <- apply(dataPoints, 2, sd)
-
+ifn_tub$fold_1 <- 2^(-ifn_tub$ddCt_1)
 
