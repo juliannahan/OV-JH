@@ -42,3 +42,9 @@ dataPoints_means <- apply(dataPoints, 2, mean)
 
 # Find standard deviation with `apply()`
 dataPoints_sdev <- apply(dataPoints, 2, sd)
+
+#find avg dCT just for control cell line
+Lenti1 <- subset(ifn_tub, Task == "Lenti_1")
+Lenti2 <- subset(ifn_tub, Task == "Lenti_2")
+rbind(Lenti1, Lenti2)
+ifn_tub$len_avg <- mean(lenti$ifn_control)
