@@ -30,3 +30,15 @@ ifn_tub <- inner_join(tubulin, ifn)
 #calculate dCT 
 ifn_tub$dCT_1 <- (ifn_tub$IFNb_1 - ifn_tub$tub_avg)
 ifn_tub$dCT_2 <- (ifn_tub$IFNb_2 - ifn_tub$tub_avg)
+
+#find average of control dCt (row 1)
+ifn_tub$ifn_control <- apply(ifn_tub[1, 8:9], 1, mean)
+
+
+
+#CODE FOR LATER: standard dev
+# Find means per column with `apply()`
+dataPoints_means <- apply(dataPoints, 2, mean)
+
+# Find standard deviation with `apply()`
+dataPoints_sdev <- apply(dataPoints, 2, sd)
