@@ -39,6 +39,17 @@ Lenti2 <- subset(ifn_tub, Task == "Lenti_2")
 lenti <- rbind(Lenti1, Lenti2)
 ifn_tub$len_avg <- mean(lenti$ifn_control)
 
+#Calc ddCt: dCt - len_avg
+ifn_tub$ddCt_1 <- (ifn_tub$dCt_1 - ifn_tub$len_avg)
+ifn_tub$ddCt_2 <- (ifn_tub$dCt_2 - ifn_tub$len_avg)
+
+
+
+
+
+
+
+
 
 #CODE FOR LATER: standard dev
 # Find means per column with `apply()`
@@ -47,7 +58,4 @@ dataPoints_means <- apply(dataPoints, 2, mean)
 # Find standard deviation with `apply()`
 dataPoints_sdev <- apply(dataPoints, 2, sd)
 
-#Calc ddCt: dCt - len_avg
-ifn_tub$ddCt_1 <- (ifn_tub$dCt_1 - ifn_tub$len_avg)
-ifn_tub$ddCt_2 <- (ifn_tub$dCt_2 - ifn_tub$len_avg)
 
