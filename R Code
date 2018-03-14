@@ -57,7 +57,8 @@ n.colmeans = function(df, n = 10){
   FUN = mean)
 }
 stats <- n.colmeans(ifn_tub, 2)
-col_stats <- data.frame("Fold_avg" = stats$avg_fold) 
+col_stats <- data.frame("Cell", "Fold_avg" = stats$avg_fold) 
+col_stats$X.Cell.<- c("cat_11","cat_9", "KO", "Lenti", "p150_11", "p150_8")
 
 #group rows
 cat_11 <- ifn_tub[1:2, 13:14]
