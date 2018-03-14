@@ -51,10 +51,10 @@ ifn_tub$fold_2 <- 2^(-ifn_tub$ddCt_2)
 #Calc average fold change/row
 ifn_tub$avg_fold <- rowMeans(subset(ifn_tub, select = c(fold_1, fold_2)), na.rm = TRUE)
 
-n.colmeans = function(ifn_tub, n = 2){
+n.colmeans = function(df, n = 10){
   aggregate(x = df,
-            by = list(gl(ceiling(nrow(ifn_tub)/n), n)[1:nrow(ifn_tub)]),
-            FUN = mean)
+  by = list(gl(ceiling(nrow(df)/n), n)[1:nrow(df)]),
+  FUN = mean)
 }
 stats <- n.colmeans(ifn_tub, 2)
 col_stats <- data.frame("Fold_avg" = stats$avg_fold) 
