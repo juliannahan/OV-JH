@@ -59,6 +59,15 @@ n.colmeans = function(df, n = 10){
 stats <- n.colmeans(ifn_tub, 2)
 col_stats <- data.frame("Fold_avg" = stats$avg_fold) 
 
+#group rows
+cat_11 <- ifn_tub[1:2, 13:14]
+cat_9 <- ifn_tub[3:4, 13:14]
+KO <- ifn_tub[5:6, 13:14]
+Lenti <- ifn_tub[7:8, 13:14]
+p150_11 <- ifn_tub[9:10, 13:14]
+p150_8 <- ifn_tub[11:12, 13:14]
+
+
 #CODE FOR LATER: standard dev
 # Find means per column with `apply()`
 dataPoints_means <- apply(dataPoints, 2, mean)
