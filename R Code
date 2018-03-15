@@ -34,8 +34,8 @@ ifn_tub$dCT_2 <- (ifn_tub$IFNb_2 - ifn_tub$tub_avg)
 #find average of control dCt (row 1)
 ifn_tub$ifn_control <- apply(ifn_tub[1, 8:9], 1, mean)
 
-Lenti1 <- subset(ifn_tub, Task == "Lenti_1")
-Lenti2 <- subset(ifn_tub, Task == "Lenti_2")
+Lenti1 <- subset(ifn_tub, Task == "Lenti.1")
+Lenti2 <- subset(ifn_tub, Task == "Lenti.2")
 lenti <- rbind(Lenti1, Lenti2)
 ifn_tub$len_avg <- mean(lenti$ifn_control)
 
