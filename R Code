@@ -71,4 +71,4 @@ p150_8 <- ifn_tub[11:12, 13:14]
 #Separate biological replicates from technical replicates
 library(dplyr)
 ifn_tub <- data.frame(x = c("cat_11.1", "cat_11.2", "cat_9.1", "cat_9.2", "KO_1", "KO_2", "Lenti_1", "Lenti_2", "p150_11.1", "p150_11.2", "p150_8.1", "p150_8.2"))
-ifn_tub %>% separate(x, c("cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8"))
+ifn_tub %>% separate(x, #not sure yet, #"." or "_", extra = "warn")
