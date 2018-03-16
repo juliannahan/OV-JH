@@ -89,4 +89,18 @@ stats <- data.frame(Cell = c("cat_11", "cat_9", "KO", "Lenti",
                             p150_11_mean, p150_8_mean),
                     Std = c(cat_11_sd, cat_9_sd, KO_sd, Lenti_sd, 
                             p150_11_sd, p150_8_sd) )
+                            
+#plot the data
+fig_stats <- stats %>% group_by(Cell) %>% summarise( meanfold = Avg, 
+                                                     SD = Std, 
+                                                     N = 4, 
+                                                     SEM = SD/sqrt(N), 
+                                                     CI = SEM *qt(0.975, N-1))
+limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
+              ymin = fig_stats$meanfold - fig_stats$CI)
+
+ggplot(data = fig_stats) 
++ aes( x = Cell, y = meanfold)
++ geom_col()
++ geom_errorbar(limits, width = .3)
 
