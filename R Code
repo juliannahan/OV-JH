@@ -66,7 +66,7 @@ col_stats$X.Cell.<- c("cat_11","cat_9", "KO", "Lenti", "p150_11", "p150_8")
 
 ###maybe make this part a new section### 
 
-#avgerage fold change for each cell line
+#average fold change for each cell line
 #at this point you can get rid of outliers 
 #just change the range (i.e 13:13 instead of 13:14)
 
@@ -85,7 +85,7 @@ Lenti_sd <- sd(as.numeric(unlist(ifn_tub[7:8, 13:14])))
 p150_11_sd <- sd(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
 p150_8_sd <- sd(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
 
-#create new dataframe with cell type and std
+#create new dataframe with cell type, average, and std
 stats <- data.frame(Cell = c("cat_11", "cat_9", "KO", "Lenti", 
                              "p150_11", "p150_8"),
                     Avg = c(cat_11_mean, cat_9_mean, KO_mean, Lenti_mean, 
