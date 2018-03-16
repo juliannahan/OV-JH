@@ -60,13 +60,13 @@ stats <- n.colmeans(ifn_tub, 2)
 col_stats <- data.frame("Cell", "Fold_avg" = stats$avg_fold) 
 col_stats$X.Cell.<- c("cat_11","cat_9", "KO", "Lenti", "p150_11", "p150_8")
 
-#group rows
-cat_11 <- ifn_tub[1:2, 13:14]
-cat_9 <- ifn_tub[3:4, 13:14]
-KO <- ifn_tub[5:6, 13:14]
-Lenti <- ifn_tub[7:8, 13:14]
-p150_11 <- ifn_tub[9:10, 13:14]
-p150_8 <- ifn_tub[11:12, 13:14]
+#standard devation for each cell line
+cat_11 <- sd(as.numeric(unlist(ifn_tub[1:2, 13:14])))
+cat_9 <-sd(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
+KO <- sd(as.numeric(unlist(ifn_tub[5:6, 13:14])))  
+Lenti <- sd(as.numeric(unlist(ifn_tub[7:8, 13:14])))
+p150_11 <- sd(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
+p150_8 <- sd(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
 
 #Separate biological replicates from technical replicates
 library(dplyr)
