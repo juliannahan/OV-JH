@@ -48,6 +48,9 @@ ifn_tub$ddCt_2 <- (ifn_tub$dCt_2 - ifn_tub$len_avg)
 ifn_tub$fold_1 <- 2^(-ifn_tub$ddCt_1)
 ifn_tub$fold_2 <- 2^(-ifn_tub$ddCt_2)
 
+##########################
+ 
+##don't need this any more##
 #Calc average fold change/row
 ifn_tub$avg_fold <- rowMeans(subset(ifn_tub, select = c(fold_1, fold_2)), na.rm = TRUE)
 
@@ -59,16 +62,31 @@ n.colmeans = function(df, n = 10){
 stats <- n.colmeans(ifn_tub, 2)
 col_stats <- data.frame("Cell", "Fold_avg" = stats$avg_fold) 
 col_stats$X.Cell.<- c("cat_11","cat_9", "KO", "Lenti", "p150_11", "p150_8")
+##########################
+
+###maybe make this part a new section### 
+
+#avgerage fold change for each cell line
+cat_11_mean <- mean(as.numeric(unlist(ifn_tub[1:2, 13:14])))
+cat_9_mean <- mean(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
+KO_mean <- mean(as.numeric(unlist(ifn_tub[5:6, 13:14])))  
+Lenti_mean <- mean(as.numeric(unlist(ifn_tub[7:8, 13:14])))
+p150_11_mean <- mean(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
+p150_8_mean <- mean(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
 
 #standard devation for each cell line
-cat_11 <- sd(as.numeric(unlist(ifn_tub[1:2, 13:14])))
-cat_9 <-sd(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
-KO <- sd(as.numeric(unlist(ifn_tub[5:6, 13:14])))  
-Lenti <- sd(as.numeric(unlist(ifn_tub[7:8, 13:14])))
-p150_11 <- sd(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
-p150_8 <- sd(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
+cat_11_sd <- sd(as.numeric(unlist(ifn_tub[1:2, 13:14])))
+cat_9_sd <-sd(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
+KO_sd <- sd(as.numeric(unlist(ifn_tub[5:6, 13:14])))  
+Lenti_sd <- sd(as.numeric(unlist(ifn_tub[7:8, 13:14])))
+p150_11_sd <- sd(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
+p150_8_sd <- sd(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
 
-#Separate biological replicates from technical replicates
-library(dplyr)
-ifn_tub <- data.frame(x = c("cat_11.1", "cat_11.2", "cat_9.1", "cat_9.2", "KO_1", "KO_2", "Lenti_1", "Lenti_2", "p150_11.1", "p150_11.2", "p150_8.1", "p150_8.2"))
-ifn_tub %>% separate(x, c("key", "value"), ".", extra = "warn")
+#create new dataframe with cell type and std
+stats <- data.frame(Cell = c("cat_11", "cat_9", "KO", "Lenti", 
+                             "p150_11", "p150_8"),
+                    Avg = c(cat_11_mean, cat_9_mean, KO_mean, Lenti_mean, 
+                            p150_11_mean, p150_8_mean),
+                    Std = c(cat_11_sd, cat_9_sd, KO_sd, Lenti_sd, 
+                            p150_11_sd, p150_8_sd) )
+
