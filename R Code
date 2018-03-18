@@ -69,6 +69,8 @@ col_stats$X.Cell.<- c("cat_11","cat_9", "KO", "Lenti", "p150_11", "p150_8")
 #average fold change for each cell line
 #at this point you can get rid of outliers 
 #just change the range (i.e 13:13 instead of 13:14)
+#3 data points: KO_mean <- mean(as.numeric(unlist(ifn_tub[5:6, 13]+ifn_tub[6, 14])))  
+#3 data points: KO_sd <- sd(as.numeric(unlist(ifn_tub[5:6, 13]+ifn_tub[6, 14])))  
 
 cat_11_mean <- mean(as.numeric(unlist(ifn_tub[1:2, 13:14])))
 cat_9_mean <- mean(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
