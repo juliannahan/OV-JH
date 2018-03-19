@@ -1,0 +1,139 @@
+library(dplyr)
+library(tidyverse)
+
+###Edit point 1: Set working directory--Session->Set Working Directory->Choose Directory->choose file location
+###Edit point 2: Change filename =
+
+#Import data and create new, simplified csv file
+clean_data = function(filename = "p150KO.csv") {
+  qpcr <- read.csv(filename, stringsAsFactors = FALSE, header = TRUE)
+  qpcr$X <- NULL
+  
+  #reorganize columns
+  qpcr2 <- qpcr %>% spread(Sample, Ct)
+  
+  return(qpcr2)
+}
+
+qpcr2 <- clean_data("p150KO.csv")
+
+#Import and analyze reference gene (tubulin) Ct: average replicates
+extract_tubulin = function(df){
+  #make data frame with tubulin values only
+  tub1 <- df %>% select(Task, Tub_1)
+  tub2 <- df %>% select(Task, Tub_2)
+  tubulin <- inner_join(tub1, tub2)
+  
+  #calculate the average tubulin for each row
+  df$tubulin_ref <- apply(df[,8:9], 1, mean)
+  
+  #show only tubulin Ct values and tubulin avg
+  tubulin$tub_avg <- apply(df[,8:9], 1, mean)
+  
+  return(tubulin)
+}
+
+tubulin <- extract_tubulin(qpcr2)
+
+#Import and analyze gene of interest (GOI) Ct: average replicates
+extract_gene_of_interest = function(gene1, gene2){
+  #extract GOI Ct values, make table
+  g1 <- qpcr2 %>% select(Task, gene1)
+  g2 <- qpcr2 %>% select(Task, gene2)
+  gene <- inner_join(g1, g2)
+  
+  return(gene)
+} 
+
+###Edit point 3: replace "IFNb" with GOI name
+IFNb <- extract_gene_of_interest("IFNb_1", "IFNb_2")
+
+join_gene_tubulin = function(gene){
+  #join tubulin ct, tubulin avg, and IFNb Ct values
+  gene_tub <- inner_join(tubulin, gene)
+  print(gene_tub)
+}  
+
+###Edit point 4: make new data frame as "GOI_data"--replace "ifn" and "IFNb" with GOI name
+#new dataframe with gene of interest and tubulin
+ifn_tub <- join_gene_tubulin(IFNb)
+
+analyze_qpcr = function(joined_data_df, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
+  
+  #Calc dCt 
+  joined_data_df$dCt_1 <- (joined_data_df[[gene1]] - joined_data_df$tub_avg)
+  joined_data_df$dCt_2 <- (joined_data_df[[gene2]] - joined_data_df$tub_avg)
+  
+  #Find average of control dCt (row 1)
+  joined_data_df$ifn_control <- apply(joined_data_df[7:8, 7:8], 1, mean)
+  
+  #Calc average dCt for control cell line
+  Lenti1 <- subset(joined_data_df, Task == cntrl_cell1)
+  Lenti2 <- subset(joined_data_df, Task == cntrl_cell2)
+  lenti <- rbind(Lenti1, Lenti2)
+  joined_data_df$len_avg <- mean(lenti$ifn_control)
+  
+  #Calc ddCt: dCt - len_avg
+  joined_data_df$ddCt_1 <- (joined_data_df$dCt_1 - joined_data_df$len_avg)
+  joined_data_df$ddCt_2 <- (joined_data_df$dCt_2 - joined_data_df$len_avg)
+  
+  #Calc fold change: 2^(-ddCt_x)
+  2^(-joined_data_df$ddCt_1)
+  joined_data_df$fold_1 <- 2^(-joined_data_df$ddCt_1)
+  joined_data_df$fold_2 <- 2^(-joined_data_df$ddCt_2)
+  
+  return(joined_data_df) 
+}
+
+###Edit point 5: make new data frame of analyzed GOI_data
+ifn_data <- analyze_qpcr(ifn_tub,"IFNb_1", "IFNb_2", "Lenti.1", "Lenti.2")
+
+#Calc average fold change and standard deviation for each cell line
+gene_stats = function( df, c1, c2, c3, c4, c5, c6){
+  #average fold change
+  c1_mean <- mean(as.numeric(unlist(df[1:2, 13:14])))
+  c2_mean <- mean(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_mean <- mean(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_mean <- mean(as.numeric(unlist(df[7:8, 13:14])))
+  c5_mean <- mean(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_mean <- mean(as.numeric(unlist(df[11:12, 13:14]))) 
+  
+  #standard devation of fold change
+  c1_sd <- sd(as.numeric(unlist(df[1:2, 13:14])))
+  c2_sd <-sd(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_sd <- sd(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_sd <- sd(as.numeric(unlist(df[7:8, 13:14])))
+  c5_sd <- sd(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_sd <- sd(as.numeric(unlist(df[11:12, 13:14]))) 
+  
+  #create new dataframe with cell type, avg, and std
+  stats <- data.frame(Cell = c(c1, c1, c3, c4, 
+                               c5, c6),
+                      Avg = c(c1_mean, c2_mean, c3_mean, c4_mean, 
+                              c5_mean, c6_mean),
+                      Std = c(c1_sd, c2_sd, c3_sd, c4_sd, 
+                              c5_sd, c6_sd) )
+  return(stats)
+}
+
+###Edit point 6: replace "IFNb" and "ifn" with GOI name
+#Make new data frame for av/sd per gene
+IFNb_stats <- gene_stats(ifn_data, "cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
+
+#Graph average fold change for GOI and standard deviation
+graph_data = function(gene_stats, title_graph){
+  fig_stats <- gene_stats %>% group_by(Cell) %>% rowwise() %>% summarise( meanfold = Avg, 
+                                                          SD = Std, 
+                                                          N = 4, 
+                                                          SEM = SD/sqrt(N), 
+                                                          CI = SEM *qt(0.975, N-1))
+limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
+              ymin = fig_stats$meanfold - fig_stats$CI)
+
+graph <- ggplot(data = fig_stats) + aes( x = gene_stats$Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title= title_graph)
+graph + xlab("Cell")
+graph + ylab("Average Fold Change")
+}
+
+###Edit point 7: change data frame and title of graph--replace "IFNb" with GOI name
+graphed_data <- graph_data(IFNb_stats, "IFNb Expression")
