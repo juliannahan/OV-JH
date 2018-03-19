@@ -1,0 +1,76 @@
+library(tidyverse)
+clean_data = function(filename = "p150KO.csv") {
+  qpcr <- read.csv(filename, stringsAsFactors = FALSE, header = TRUE)
+  qpcr$X <- NULL
+  
+  #reorganize columns
+  qpcr2 <- qpcr %>% spread(Sample, Ct)
+  
+  return(qpcr2)
+}
+
+qpcr2 <- clean_data(filename ="p150KO.csv")
+
+extract_tubulin = function(df = qpcr2){
+  #start with just tubulin
+  #make data set with tubulin values only
+  tub1 <- qpcr2 %>% select(Task, Tub_1)
+  tub2 <- qpcr2 %>% select(Task, Tub_2)
+  tubulin <- inner_join(tub1, tub2)
+  
+  #calculate the average Tubulin for each row
+  qpcr2$tubulin_ref <- apply(qpcr2[,8:9], 1, mean)
+  
+  #show only tubulin ct values and tubulin avg
+  tubulin$tub_avg <- apply(qpcr2[,8:9], 1, mean)
+  return(tubulin)
+}
+
+tubulin <- extract_tubulin(qpcr2)
+
+extract_gene_of_interest = function(gene1 = IFNb_1, gene2 = IFNb_2){
+  #extract IFNb Ct values, make table
+  g1 <- qpcr2 %>% select(Task, gene1)
+  g2 <- qpcr2 %>% select(Task, gene2)
+  gene <- inner_join(g1, g2)
+
+  return(gene)
+}
+  
+IFNb <- extract_gene_of_interest("IFNb_1", "IFNb_2")
+
+join_gene_tubulin = function(gene = IFNb){
+#join tubulin ct, tubulin avg, and IFNb ct values
+  gene_tub <- inner_join(tubulin, gene)
+  print(gene_tub)
+}  
+
+#make new dataframe with gene of interest and tubulin
+ifn_tub <- join_gene_tubulin(IFNb)
+
+calc_dCt = function(joined_data, gene1, gene2){
+
+  #calculate dCT 
+  joined_data$dCt_1 <- (joined_data$gene1 - joined_data$tub_avg)
+  joined_data$dCt_2 <- (joined_data$gene2 - joined_data$tub_avg)
+  
+  return(joined_data)
+}
+
+  #find average of control dCt (row 1)
+  df$ifn_control <- apply(df[7:8, 7:8], 1, mean)
+  
+  #calulate average dCT for control cell line
+  Lenti1 <- subset(df, Task == cntrl_cell1)
+  Lenti2 <- subset(df, Task == cntrl_cell2)
+  lenti <- rbind(Lenti1, Lenti2)
+  df$len_avg <- mean(lenti$ifn_control)
+  
+  #Calc ddCt: dCt - len_avg
+  df$ddCt_1 <- (df$dCt_1 - df$len_avg)
+  df$ddCt_2 <- (df$dCt_2 - df$len_avg)
+  
+  #Calc fold change: 2^(-ddCt_x)
+  2^(-df$ddCt_1)
+  df$fold_1 <- 2^(-df$ddCt_1)
+  df$fold_2 <- 2^(-df$ddCt_2)
