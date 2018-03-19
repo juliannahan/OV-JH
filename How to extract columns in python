@@ -20,3 +20,7 @@ def remove_excess_space_csv(filename: "../QPCR/p150KO_p150_dcat_2.csv",
     headers = ["Sample", "Task", "Ct"]
     #save as new csv file named qpcr
     qpcr.to_csv( outputfile, columns = headers)
+
+#run function for origninal csv file
+#add the your new file name as the outputfile
+remove_excess_space_csv("../QPCR/p150KO_p150_dcat_2.csv", "p150KO.csv")
