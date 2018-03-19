@@ -1,5 +1,5 @@
 library(tidyverse)
-clean_data = function(filename = "p150KO.csv", gene1 = IFNb_1, gene2 = IFNb_2) {
+clean_data = function(filename = "p150KO.csv") {
   qpcr <- read.csv(filename, stringsAsFactors = FALSE, header = TRUE)
   qpcr$X <- NULL
   
