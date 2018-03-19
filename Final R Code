@@ -135,5 +135,5 @@ graph + xlab("Cell")
 graph + ylab("Average Fold Change")
 }
 
-###Edit point 7: change data frame and title of graph--replace "IFNb" with GOI name
+###Edit point 7: change data frame and title of graph--replace "IFNb" with GOI name, then type "graphed_data" in the console to see graph
 graphed_data <- graph_data(IFNb_stats, "IFNb Expression")
