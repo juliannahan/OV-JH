@@ -48,29 +48,29 @@ join_gene_tubulin = function(gene = IFNb){
 #make new dataframe with gene of interest and tubulin
 ifn_tub <- join_gene_tubulin(IFNb)
 
-calc_dCt = function(joined_data, gene1, gene2){
+analyze_qpcr = function(joined_data, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
 
   #calculate dCT 
-  joined_data$dCt_1 <- (joined_data$gene1 - joined_data$tub_avg)
-  joined_data$dCt_2 <- (joined_data$gene2 - joined_data$tub_avg)
+  joined_data$dCt_1 <- (joined_data[[gene1]] - joined_data$tub_avg)
+  joined_data$dCt_2 <- (joined_data[[gene2]] - joined_data$tub_avg)
   
-  return(joined_data)
-}
-
   #find average of control dCt (row 1)
-  df$ifn_control <- apply(df[7:8, 7:8], 1, mean)
-  
+  joined_data$ifn_control <- apply(joined_data[7:8, 7:8], 1, mean)
+
   #calulate average dCT for control cell line
-  Lenti1 <- subset(df, Task == cntrl_cell1)
-  Lenti2 <- subset(df, Task == cntrl_cell2)
+  Lenti1 <- subset(joined_data, Task == cntrl_cell1)
+  Lenti2 <- subset(joined_data, Task == cntrl_cell2)
   lenti <- rbind(Lenti1, Lenti2)
-  df$len_avg <- mean(lenti$ifn_control)
+  joined_data$len_avg <- mean(lenti$ifn_control)
   
   #Calc ddCt: dCt - len_avg
-  df$ddCt_1 <- (df$dCt_1 - df$len_avg)
-  df$ddCt_2 <- (df$dCt_2 - df$len_avg)
-  
+  joined_data$ddCt_1 <- (joined_data$dCt_1 - joined_data$len_avg)
+  joined_data$ddCt_2 <- (joined_data$dCt_2 - joined_data$len_avg)
+    
   #Calc fold change: 2^(-ddCt_x)
-  2^(-df$ddCt_1)
-  df$fold_1 <- 2^(-df$ddCt_1)
-  df$fold_2 <- 2^(-df$ddCt_2)
+  2^(-joined_data$ddCt_1)
+  joined_data$fold_1 <- 2^(-joined_data$ddCt_1)
+  joined_data$fold_2 <- 2^(-joined_data$ddCt_2)
+
+  return(joined_data) 
+}
