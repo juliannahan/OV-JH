@@ -127,7 +127,7 @@ stats <- data.frame(Cell = c(c1, c1, c3, c4,
 return(stats)
 }
 
-IFNb_stats <- data_mean("cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
+IFNb_stats <- gene_stats("cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
 
 graph_qpcr = function(gene_stats, graph_title){
 #plot the data
