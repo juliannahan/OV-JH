@@ -43,7 +43,7 @@ join_gene_tubulin = function(gene = IFNb){
 #make new dataframe with gene of interest and tubulin
 ifn_tub <- join_gene_tubulin(IFNb)
 
-analyze_qpcr = function(joined_data, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
+analyze_qpcr = function(joined_data_df, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
 
   #calculate dCT 
   joined_data$dCt_1 <- (joined_data[[gene1]] - joined_data$tub_avg)
@@ -70,52 +70,27 @@ analyze_qpcr = function(joined_data, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
   return(joined_data) 
 }
 
+ifn_data <- analyze_qpcr(ifn_tub,"IFNb_1", "IFNb_2", "Lenti.1", "Lenti.2")
 
-analyze_qpcr = function(joined_data, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
 
-  #calculate dCT 
-  joined_data$dCt_1 <- (joined_data[[gene1]] - joined_data$tub_avg)
-  joined_data$dCt_2 <- (joined_data[[gene2]] - joined_data$tub_avg)
-  
-  #find average of control dCt (row 1)
-  joined_data$ifn_control <- apply(joined_data[7:8, 7:8], 1, mean)
-
-  #calulate average dCT for control cell line
-  Lenti1 <- subset(joined_data, Task == cntrl_cell1)
-  Lenti2 <- subset(joined_data, Task == cntrl_cell2)
-  lenti <- rbind(Lenti1, Lenti2)
-  joined_data$len_avg <- mean(lenti$ifn_control)
-  
-  #Calc ddCt: dCt - len_avg
-  joined_data$ddCt_1 <- (joined_data$dCt_1 - joined_data$len_avg)
-  joined_data$ddCt_2 <- (joined_data$dCt_2 - joined_data$len_avg)
-    
-  #Calc fold change: 2^(-ddCt_x)
-  2^(-joined_data$ddCt_1)
-  joined_data$fold_1 <- 2^(-joined_data$ddCt_1)
-  joined_data$fold_2 <- 2^(-joined_data$ddCt_2)
-
-  return(joined_data) 
-}
-
-gene_stats = function( c1, c2, c3, c4, c5, c6){
+gene_stats = function( df, c1, c2, c3, c4, c5, c6){
   #avgerage fold change for each cell line
   #at this point you can get rid of values you don't want if they mess with the standard deviation
   #just change the range (i.e 13:13 instead of 13:14)
-  c1_mean <- mean(as.numeric(unlist(ifn_tub[1:2, 13:14])))
-  c2_mean <- mean(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
-  c3_mean <- mean(as.numeric(unlist(ifn_tub[5:6, 13:14])))  
-  c4_mean <- mean(as.numeric(unlist(ifn_tub[7:8, 13:14])))
-  c5_mean <- mean(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
-  c6_mean <- mean(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
+  c1_mean <- mean(as.numeric(unlist(df[1:2, 13:14])))
+  c2_mean <- mean(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_mean <- mean(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_mean <- mean(as.numeric(unlist(df[7:8, 13:14])))
+  c5_mean <- mean(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_mean <- mean(as.numeric(unlist(df[11:12, 13:14]))) 
 
 #standard devation for each cell line
-c1_sd <- sd(as.numeric(unlist(ifn_tub[1:2, 13:14])))
-c2_sd <-sd(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
-c3_sd <- sd(as.numeric(unlist(ifn_tub[5:6, 13:14])))  
-c4_sd <- sd(as.numeric(unlist(ifn_tub[7:8, 13:14])))
-c5_sd <- sd(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
-c6_sd <- sd(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
+c1_sd <- sd(as.numeric(unlist(df[1:2, 13:14])))
+c2_sd <-sd(as.numeric(unlist(df[3:4, 13:14]))) 
+c3_sd <- sd(as.numeric(unlist(df[5:6, 13:14])))  
+c4_sd <- sd(as.numeric(unlist(df[7:8, 13:14])))
+c5_sd <- sd(as.numeric(unlist(df[9:10, 13:14]))) 
+c6_sd <- sd(as.numeric(unlist(df[11:12, 13:14]))) 
 
 #create new dataframe with cell type, avg, and std
 stats <- data.frame(Cell = c(c1, c1, c3, c4, 
@@ -127,9 +102,9 @@ stats <- data.frame(Cell = c(c1, c1, c3, c4,
 return(stats)
 }
 
-IFNb_stats <- gene_stats("cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
+IFNb_stats <- gene_stats(ifn_data, "cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
 
-graph_qpcr = function(gene_stats, graph_title){
+graph_qpcr = function(gene_stats_df, graph_title){
 #plot the data
 fig_stats <- gene_stats %>% group_by(Cell) %>% summarise( meanfold = Avg, 
                                                      SD = Std, 
@@ -139,7 +114,9 @@ fig_stats <- gene_stats %>% group_by(Cell) %>% summarise( meanfold = Avg,
 limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
               ymin = fig_stats$meanfold - fig_stats$CI)
 
-graph <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title= graph_title)
+graph <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + 
+  geom_col() + geom_errorbar(limits, width = .3) + labs(title= graph_title)
+
 graph + xlab("Cell")
 graph + ylab("Average Fold Change")
 
