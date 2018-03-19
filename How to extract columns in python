@@ -1,7 +1,8 @@
-#Updated 
-#Create function
-#You just have to tell it the inputfile name 
-#and the new name for the file
+#Extracting columns from csv file
+
+##Set working directory
+##Select input filename
+##Designate output filename
 
 def remove_excess_space_csv(filename: "../QPCR/p150KO_p150_dcat_2.csv",
                            outputfile : 'p150KO.csv'):
