@@ -1,0 +1,223 @@
+library(tidyverse)
+library(dplyr)
+qpcr <- read.csv("p150KO.csv", stringsAsFactors = FALSE, header = TRUE)
+
+#remove column x
+qpcr$X <- NULL
+
+#reorganize columns
+qpcr2 <- qpcr %>% spread(Sample, Ct)
+
+#start with just tubulin
+#make data set with tubulin values only
+tub1 <- qpcr2 %>% select(Task, Tub_1)
+tub2 <- qpcr2 %>% select(Task, Tub_2)
+tubulin <- inner_join(tub1, tub2)
+
+##calculating means of certain rows of columns by specifying column index
+tubulin$tub_avg <- apply(qpcr2[,8:9], 1, mean)
+
+tubulin$tub_avg <- apply(qpcr2[,8:9], 1, sub)
+
+#exctract IFNb Ct values, make table
+ifn1 <- qpcr2 %>% select(Task, IFNb_1)
+ifn2 <- qpcr2 %>% select(Task, IFNb_2)
+ifn <- inner_join(ifn1, ifn2)
+
+#join tubulin ct, tubulin avg, and IFNb ct values
+ifn_tub <- inner_join(tubulin, ifn)
+
+#Calc dCt: normalized Ct (individual Ct / tub_avg)
+ifn_tub$dCt_1 <- (ifn_tub$IFNb_1 - ifn_tub$tub_avg)
+ifn_tub$dCt_2 <- (ifn_tub$IFNb_2 - ifn_tub$tub_avg)
+
+#find average of control dCt (row 1)
+ifn_tub$ifn_control <- apply(ifn_tub[7:8, 7:8], 1, mean)
+
+Lenti1 <- subset(ifn_tub, Task == "Lenti.1")
+Lenti2 <- subset(ifn_tub, Task == "Lenti.2")
+lenti = rbind(Lenti1, Lenti2)
+ifn_tub$len_avg <- mean(lenti$ifn_control)
+
+#Calc ddCt: dCt - len_avg
+ifn_tub$ddCt_1 <- (ifn_tub$dCt_1 - ifn_tub$len_avg)
+ifn_tub$ddCt_2 <- (ifn_tub$dCt_2 - ifn_tub$len_avg)
+
+#Calc fold change: 2^(-ddCt_x)
+ifn_tub$fold_1 <- 2^(-ifn_tub$ddCt_1)
+ifn_tub$fold_2 <- 2^(-ifn_tub$ddCt_2)
+
+###maybe make this part a new section### 
+
+#average fold change for each cell line
+#at this point you can get rid of outliers 
+#just change the range (i.e 13:13 instead of 13:14)
+
+
+cat_11_mean <- mean(as.numeric(unlist(ifn_tub[1:2, 13:14])))
+cat_9_mean <- mean(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
+KO_mean <- mean(as.numeric(unlist(ifn_tub[5:6, 13]+ifn_tub[6, 14])))  
+Lenti_mean <- mean(as.numeric(unlist(ifn_tub[7:8, 13:14])))
+p150_11_mean <- mean(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
+p150_8_mean <- mean(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
+
+#standard devation for each cell line
+cat_11_sd <- sd(as.numeric(unlist(ifn_tub[1:2, 13:14])))
+cat_9_sd <-sd(as.numeric(unlist(ifn_tub[3:4, 13:14]))) 
+KO_sd <- sd(as.numeric(unlist(ifn_tub[5:6, 13]+ifn_tub[6, 14])))  
+Lenti_sd <- sd(as.numeric(unlist(ifn_tub[7:8, 13:14])))
+p150_11_sd <- sd(as.numeric(unlist(ifn_tub[9:10, 13:14]))) 
+p150_8_sd <- sd(as.numeric(unlist(ifn_tub[11:12, 13:14]))) 
+
+#create new dataframe with cell type, average, and std
+stats <- data.frame(Cell = c("cat_11", "cat_9", "KO", "Lenti", 
+                             "p150_11", "p150_8"),
+                    Avg = c(cat_11_mean, cat_9_mean, KO_mean, Lenti_mean, 
+                            p150_11_mean, p150_8_mean),
+                    Std = c(cat_11_sd, cat_9_sd, KO_sd, Lenti_sd, 
+                            p150_11_sd, p150_8_sd) )
+
+#plot the data
+fig_stats <- stats %>% group_by(Cell) %>% summarise( meanfold = Avg, 
+                                                     SD = Std, 
+                                                     N = 4, 
+                                                     SEM = SD/sqrt(N), 
+                                                     CI = SEM *qt(0.975, N-1))
+limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
+              ymin = fig_stats$meanfold - fig_stats$CI)
+
+IFNb <- ggplot(data = fig_stats) + 
+  aes( x = Cell, y = meanfold) + geom_col() + 
+  geom_errorbar(limits, width = .3) + 
+  labs(title="IFNb Expression")
+  + theme_classic()
+
+IFNb + xlab("Cell")
+IFNb + ylab("Average Fold Change")
+IFNb + ggtitle("IFNb Expression")
+
+
+
+
+
+
+
+
+##FUNCTIONS
+library(tidyverse)
+clean_data = function(filename = "p150KO.csv", gene1 = IFNb_1, gene2 = IFNb_2) {
+  qpcr <- read.csv(filename, stringsAsFactors = FALSE, header = TRUE)
+  qpcr$X <- NULL
+  
+  #reorganize columns
+  qpcr2 <- qpcr %>% spread(Sample, Ct)
+  
+  #start with just tubulin
+  #make data set with tubulin values only
+  tub1 <- qpcr2 %>% select(Task, Tub_1)
+  tub2 <- qpcr2 %>% select(Task, Tub_2)
+  tubulin <- inner_join(tub1, tub2)
+  
+  #calculate the average Tubulin for each row
+  qpcr2$tubulin_ref <- apply(qpcr2[,8:9], 1, mean)
+  
+  #show only tubulin ct values and tubulin avg
+  tubulin$tub_avg <- apply(qpcr2[,8:9], 1, mean)
+  
+  return(tubulin)
+}
+
+tubulin <- clean_data("p150KO.csv")
+
+extract_gene_of_interest = function(gene1 = IFNb_1, gene2 = IFNb_2){
+  #extract IFNb Ct values, make table
+  g1 <- qpcr2 %>% select(Task, gene1)
+  g2 <- qpcr2 %>% select(Task, gene2)
+  gene <- inner_join(g1, g2)
+  
+  return(gene)
+} 
+
+IFNb <- extract_gene_of_interest("IFNb_1", "IFNb_2")
+
+join_gene_tubulin = function(gene = IFNb){
+  #join tubulin ct, tubulin avg, and IFNb ct values
+  gene_tub <- inner_join(tubulin, gene)
+  print(gene_tub)
+}  
+
+#make new dataframe with gene of interest and tubulin
+ifn_tub <- join_gene_tubulin(IFNb)
+
+analyze_qpcr = function(joined_data_df, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
+  
+  #calculate dCT 
+  joined_data_df$dCt_1 <- (joined_data_df[[gene1]] - joined_data_df$tub_avg)
+  joined_data_df$dCt_2 <- (joined_data_df[[gene2]] - joined_data_df$tub_avg)
+  
+  #find average of control dCt (row 1)
+  joined_data_df$ifn_control <- apply(joined_data_df[7:8, 7:8], 1, mean)
+  
+  #calulate average dCT for control cell line
+  Lenti1 <- subset(joined_data_df, Task == cntrl_cell1)
+  Lenti2 <- subset(joined_data_df, Task == cntrl_cell2)
+  lenti <- rbind(Lenti1, Lenti2)
+  joined_data_df$len_avg <- mean(lenti$ifn_control)
+  
+  #Calc ddCt: dCt - len_avg
+  joined_data_df$ddCt_1 <- (joined_data_df$dCt_1 - joined_data_df$len_avg)
+  joined_data_df$ddCt_2 <- (joined_data_df$dCt_2 - joined_data_df$len_avg)
+  
+  #Calc fold change: 2^(-ddCt_x)
+  2^(-joined_data_df$ddCt_1)
+  joined_data_df$fold_1 <- 2^(-joined_data_df$ddCt_1)
+  joined_data_df$fold_2 <- 2^(-joined_data_df$ddCt_2)
+  
+  return(joined_data_df) 
+}
+
+ifn_data <- analyze_qpcr(ifn_tub, "IFNb_1", "IFNb_2", "Lenti.1", "Lenti.2")
+
+gene_stats = function(df, c1, c2, c3, c4, c5, c6){
+  #avgerage fold change for each cell line
+  #at this point you can get rid of values you don't want if they mess with the standard deviation
+  #just change the range (i.e 13:13 instead of 13:14)
+  c1_mean <- mean(as.numeric(unlist(df[1:2, 13:14])))
+  c2_mean <- mean(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_mean <- mean(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_mean <- mean(as.numeric(unlist(df[7:8, 13:14])))
+  c5_mean <- mean(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_mean <- mean(as.numeric(unlist(df[11:12, 13:14]))) 
+  
+  #standard devation for each cell line
+  c1_sd <- sd(as.numeric(unlist(df[1:2, 13:14])))
+  c2_sd <-sd(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_sd <- sd(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_sd <- sd(as.numeric(unlist(df[7:8, 13:14])))
+  c5_sd <- sd(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_sd <- sd(as.numeric(unlist(df[11:12, 13:14]))) 
+  
+  #create new dataframe with cell type, avg, and std
+  stats <- data.frame(Cell = c(c1, c1, c3, c4, 
+                               c5, c6),
+                      Avg = c(c1_mean, c2_mean, c3_mean, c4_mean, 
+                              c5_mean, c6_mean),
+                      Std = c(c1_sd, c2_sd, c3_sd, c4_sd, 
+                              c5_sd, c6_sd) )
+  return(stats)
+}
+
+#Make new data frame for av/sd per gene
+IFNb_stats <- gene_stats(ifn_data, "cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
+
+fig_stats <- IFNb_stats %>% group_by(Cell) %>% summarise( meanfold = Avg, 
+                                                     SD = Std, 
+                                                     N = 4, 
+                                                     SEM = SD/sqrt(N), 
+                                                     CI = SEM *qt(0.975, N-1))
+limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
+              ymin = fig_stats$meanfold - fig_stats$CI)
+
+IFNb <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title="IFN Expression")
+IFNb + xlab("Cell")
+IFNb + ylab("Average Fold Change")
