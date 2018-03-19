@@ -1,0 +1,128 @@
+library(dplyr)
+library(tidyverse)
+clean_data = function(filename = "p150KO.csv") {
+  qpcr <- read.csv(filename, stringsAsFactors = FALSE, header = TRUE)
+  qpcr$X <- NULL
+  
+  #reorganize columns
+  qpcr2 <- qpcr %>% spread(Sample, Ct)
+  
+  return(qpcr2)
+}
+
+qpcr2 <- clean_data("p150KO.csv")
+
+extract_tubulin = function(df){
+  #start with just tubulin
+  #make data set with tubulin values only
+  tub1 <- df %>% select(Task, Tub_1)
+  tub2 <- df %>% select(Task, Tub_2)
+  tubulin <- inner_join(tub1, tub2)
+  
+  #calculate the average Tubulin for each row
+  df$tubulin_ref <- apply(df[,8:9], 1, mean)
+  
+  #show only tubulin ct values and tubulin avg
+  tubulin$tub_avg <- apply(df[,8:9], 1, mean)
+  
+  return(tubulin)
+}
+
+tubulin <- extract_tubulin(qpcr2)
+
+extract_gene_of_interest = function(gene1 = IFNb_1, gene2 = IFNb_2){
+  #extract IFNb Ct values, make table
+  g1 <- qpcr2 %>% select(Task, gene1)
+  g2 <- qpcr2 %>% select(Task, gene2)
+  gene <- inner_join(g1, g2)
+  
+  return(gene)
+} 
+
+IFNb <- extract_gene_of_interest("IFNb_1", "IFNb_2")
+
+join_gene_tubulin = function(gene = IFNb){
+  #join tubulin ct, tubulin avg, and IFNb ct values
+  gene_tub <- inner_join(tubulin, gene)
+  print(gene_tub)
+}  
+
+#make new dataframe with gene of interest and tubulin
+ifn_tub <- join_gene_tubulin(IFNb)
+
+analyze_qpcr = function(joined_data_df, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
+  
+  #calculate dCT 
+  joined_data_df$dCt_1 <- (joined_data_df[[gene1]] - joined_data_df$tub_avg)
+  joined_data_df$dCt_2 <- (joined_data_df[[gene2]] - joined_data_df$tub_avg)
+  
+  #find average of control dCt (row 1)
+  joined_data_df$ifn_control <- apply(joined_data_df[7:8, 7:8], 1, mean)
+  
+  #calulate average dCT for control cell line
+  Lenti1 <- subset(joined_data_df, Task == cntrl_cell1)
+  Lenti2 <- subset(joined_data_df, Task == cntrl_cell2)
+  lenti <- rbind(Lenti1, Lenti2)
+  joined_data_df$len_avg <- mean(lenti$ifn_control)
+  
+  #Calc ddCt: dCt - len_avg
+  joined_data_df$ddCt_1 <- (joined_data_df$dCt_1 - joined_data_df$len_avg)
+  joined_data_df$ddCt_2 <- (joined_data_df$dCt_2 - joined_data_df$len_avg)
+  
+  #Calc fold change: 2^(-ddCt_x)
+  2^(-joined_data_df$ddCt_1)
+  joined_data_df$fold_1 <- 2^(-joined_data_df$ddCt_1)
+  joined_data_df$fold_2 <- 2^(-joined_data_df$ddCt_2)
+  
+  return(joined_data_df) 
+}
+
+ifn_data <- analyze_qpcr(ifn_tub,"IFNb_1", "IFNb_2", "Lenti.1", "Lenti.2")
+
+
+gene_stats = function( df, c1, c2, c3, c4, c5, c6){
+  #avgerage fold change for each cell line
+  #at this point you can get rid of values you don't want if they mess with the standard deviation
+  #just change the range (i.e 13:13 instead of 13:14)
+  c1_mean <- mean(as.numeric(unlist(df[1:2, 13:14])))
+  c2_mean <- mean(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_mean <- mean(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_mean <- mean(as.numeric(unlist(df[7:8, 13:14])))
+  c5_mean <- mean(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_mean <- mean(as.numeric(unlist(df[11:12, 13:14]))) 
+  
+  #standard devation for each cell line
+  c1_sd <- sd(as.numeric(unlist(df[1:2, 13:14])))
+  c2_sd <-sd(as.numeric(unlist(df[3:4, 13:14]))) 
+  c3_sd <- sd(as.numeric(unlist(df[5:6, 13:14])))  
+  c4_sd <- sd(as.numeric(unlist(df[7:8, 13:14])))
+  c5_sd <- sd(as.numeric(unlist(df[9:10, 13:14]))) 
+  c6_sd <- sd(as.numeric(unlist(df[11:12, 13:14]))) 
+  
+  #create new dataframe with cell type, avg, and std
+  stats <- data.frame(Cell = c(c1, c1, c3, c4, 
+                               c5, c6),
+                      Avg = c(c1_mean, c2_mean, c3_mean, c4_mean, 
+                              c5_mean, c6_mean),
+                      Std = c(c1_sd, c2_sd, c3_sd, c4_sd, 
+                              c5_sd, c6_sd) )
+  return(stats)
+}
+
+#Make new data frame for av/sd per gene
+IFNb_stats <- gene_stats(ifn_data, "cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
+
+graph_data = function(gene_stats, title_graph){
+  fig_stats <- gene_stats %>% group_by(Cell) %>% rowwise() %>% summarise( meanfold = Avg, 
+                                                          SD = Std, 
+                                                          N = 4, 
+                                                          SEM = SD/sqrt(N), 
+                                                          CI = SEM *qt(0.975, N-1))
+limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
+              ymin = fig_stats$meanfold - fig_stats$CI)
+
+IFNb <- ggplot(data = fig_stats) + aes( x = gene_stats$Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title= title_graph)
+IFNb + xlab("Cell")
+IFNb + ylab("Average Fold Change")
+}
+graphed_data <- graph_data(IFNb_stats, "IFNb Expression")
