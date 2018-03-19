@@ -1,0 +1,39 @@
+Project Summary
+
+Our lab frequently uses qPCR to analyze changes in gene expression in various cell lines and treatments. 
+Our raw data are Ct values (Cycle threshold: number of cycles it takes for the signal to cross the background threshold) in a .csv file that we analyze, manipulate, and graph through Excel. 
+This process is tedious and time-consuming, so we chose to tackle it for our final project.
+
+Raw data: csv file titled "p150KO_p150_dcat_2.csv"
+
+Our code is documented in detail within the script, but we have included a general outline here:
+1.	Extract columns in Python
+  a.	Remove header
+  b.	Extract columns: C (well), D (Sample), F (Task), G (Ct values)
+  c.	Create new, simplified csv file with cleaner data
+2.	Analyze data in R
+  a.	Import simplified csv file
+  b.	Reorganize and clean data
+  c.	Import and analyze reference gene (tubulin) Ct: average replicates
+  d.	Import and analyze gene of interest (GOI)
+    i.	Calculate dCt (change in GOI Ct from average tubulin Ct)
+    ii.	Calculate dCt average of replicates
+    iii.	Identify dCt average of control cell line (as in 2.d.i.)
+    iv.	Calculate ddCt (change in dCt from average dCt of control)
+    v.	Calculate fold change (2^(-ddCt)
+    vi.	Calculate average and standard deviation of fold change values
+3.	Graph processed data in R
+  a.	Graph average and standard deviation of fold change values
+  b.	Set title and axes 
+4.	Repeat steps 2 and 3 with remaining GOIs
+
+
+We have added Edit Points throughout the script for other members of the lab to identify and change to fit their sample names.
+
+Edit point 1: Set working directory--Session->Set Working Directory->Choose Directory->choose file location
+Edit point 2: Change filename =
+Edit point 3: Designate individual gene names
+Edit point 4: Make new data frame as GOI_data
+Edit point 5: Make new data frame of analyzed GOI_data
+Edit point 6: Check average and standard deviation 
+Edit point 7: Change data frame and title for graph
