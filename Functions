@@ -98,7 +98,7 @@ analyze_qpcr = function(joined_data, gene1, gene2, cntrl_cell1, cntrl_cell2 ){
   return(joined_data) 
 }
 
-data_mean = function( c1, c2, c3, c4, c5, c6, x){
+gene_stats = function( c1, c2, c3, c4, c5, c6, x){
   #avgerage fold change for each cell line
   #at this point you can get rid of values you don't want if they mess with the standard deviation
   #just change the range (i.e 13:13 instead of 13:14)
