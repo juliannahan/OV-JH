@@ -113,6 +113,6 @@ fig_stats <- stats %>% group_by(Cell) %>% summarise( meanfold = Avg,
 limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
               ymin = fig_stats$meanfold - fig_stats$CI)
 
-IFNb <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title="IFN Expression")
+IFNb <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title="IFNb Expression")
 IFNb + xlab("Cell")
 IFNb + ylab("Average Fold Change")
