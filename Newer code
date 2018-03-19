@@ -123,8 +123,8 @@ graph_data = function(gene_stats, title_graph){
 limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
               ymin = fig_stats$meanfold - fig_stats$CI)
 
-IFNb <- ggplot(data = fig_stats) + aes( x = gene_stats$Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title= title_graph)
-IFNb + xlab("Cell")
-IFNb + ylab("Average Fold Change")
+graph <- ggplot(data = fig_stats) + aes( x = gene_stats$Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title= title_graph)
+graph + xlab("Cell")
+graph + ylab("Average Fold Change")
 }
 graphed_data <- graph_data(IFNb_stats, "IFNb Expression")
