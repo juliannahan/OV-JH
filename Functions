@@ -104,9 +104,8 @@ return(stats)
 
 IFNb_stats <- gene_stats(ifn_data, "cat_11", "cat_9", "KO", "Lenti", "p150_11", "p150_8")
 
-graph_qpcr = function(gene_stats_df, graph_title){
 #plot the data
-fig_stats <- gene_stats %>% group_by(Cell) %>% summarise( meanfold = Avg, 
+fig_stats <- stats %>% group_by(Cell) %>% summarise( meanfold = Avg, 
                                                      SD = Std, 
                                                      N = 4, 
                                                      SEM = SD/sqrt(N), 
@@ -114,11 +113,6 @@ fig_stats <- gene_stats %>% group_by(Cell) %>% summarise( meanfold = Avg,
 limits <- aes(ymax = fig_stats$meanfold + fig_stats$CI, 
               ymin = fig_stats$meanfold - fig_stats$CI)
 
-graph <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + 
-  geom_col() + geom_errorbar(limits, width = .3) + labs(title= graph_title)
-
-graph + xlab("Cell")
-graph + ylab("Average Fold Change")
-
-return(graph)
-}
+IFNb <- ggplot(data = fig_stats) + aes( x = Cell, y = meanfold) + geom_col() + geom_errorbar(limits, width = .3) + labs(title="IFN Expression")
+IFNb + xlab("Cell")
+IFNb + ylab("Average Fold Change")
